@@ -53,10 +53,10 @@ describe "Aliyun" do
     end
 
     it 'should get url include token' do
-      url = @connection.private_get_url('bar/foo.jpg')
+      url = @connection.private_get_url('foobar.jpg')
       # http://oss-cn-beijing.aliyuncs.com.//carrierwave-aliyun-test.oss-cn-beijing.aliyuncs.com/bar/foo.jpg?OSSAccessKeyId=1OpWEtPTjIDv5u8q&Expires=1455172009&Signature=4ibgQpfHOjVpqxG6162S8Ar3c6c=
       expect(url).to include(*%w(Signature Expires OSSAccessKeyId))
-      expect(url).to include "http://#{@uploader.aliyun_bucket}.oss-cn-beijing.aliyuncs.com/bar/foo.jpg"
+      expect(url).to include "http://#{@uploader.aliyun_bucket}.oss-#{@uploader.aliyun_area}.aliyuncs.com/foobar.jpg"
     end
   end
 

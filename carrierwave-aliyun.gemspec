@@ -3,7 +3,7 @@ $:.push File.expand_path("../lib", __FILE__)
 require File.expand_path('lib/carrierwave/aliyun/version')
 
 Gem::Specification.new do |s|
-  s.name        = "carrierwave-aliyun"
+  s.name        = "carrierwave-aliyun-oss"
   s.version     = CarrierWave::Aliyun::VERSION
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Jason Lee"]
@@ -18,5 +18,5 @@ Gem::Specification.new do |s|
   s.license       = 'MIT'
 
   s.add_dependency "carrierwave", [">= 0.5.7"]
-  s.add_dependency "aliyun-oss-sdk", [">= 0.1.6"]
+  s.add_dependency "aliyun-sdk", [">= 0.4.0"]
 end

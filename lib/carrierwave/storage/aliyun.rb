@@ -27,7 +27,7 @@ module CarrierWave
         # 上传文件
         # params:
         # - path - remote 存储路径
-        # - file - 需要上传文件的 File 对象
+        # - file - CarrierWave::SanitizedFile
         # - options:
         #   - content_type - 上传文件的 MimeType，默认 `image/jpg`
         # returns:
@@ -35,15 +35,11 @@ module CarrierWave
         def put(path, file, options = {})
           path.sub!(PATH_PREFIX, '')
           opts = {
-            'Content-Type' => options[:content_type] || 'image/jpg'
+            content_type: options[:content_type] || 'image/jpg',
+            file: file.path
           }
-
-          res = oss_upload_client.bucket_create_object(path, file, opts)
-          if res.success?
-            path_to_url(path)
-          else
-            fail 'Put file failed'
-          end
+          private_client.put_object(path, opts)
+          path_to_url(path)
         end
 
         # 读取文件
@@ -53,12 +49,7 @@ module CarrierWave
         # file data
         def get(path)
           path.sub!(PATH_PREFIX, '')
-          res = oss_upload_client.bucket_get_object(path)
-          if res.success?
-            return res.parsed_response
-          else
-            fail 'Get content faild'
-          end
+          private_client.get_object(path){ |content| content }
         end
 
         # 删除 Remote 的文件
@@ -70,12 +61,8 @@ module CarrierWave
         # 图片的下载地址
         def delete(path)
           path.sub!(PATH_PREFIX, '')
-          res = oss_upload_client.bucket_delete_object(path)
-          if res.success?
-            return path_to_url(path)
-          else
-            fail 'Delete failed'
-          end
+          private_client.delete_object(path)
+          path_to_url(path)
         end
 
         ##
@@ -88,33 +75,63 @@ module CarrierWave
         # 有效期 3600s
         def private_get_url(path)
           path.sub!(PATH_PREFIX, '')
-          oss_client.bucket_get_object_share_link(path, 3600)
+          public_client.object_url(path, true, 3600)
         end
 
         private
 
-        def oss_client
-          return @oss_client if defined?(@oss_client)
-          opts = {
-            host: "oss-#{@aliyun_area}.aliyuncs.com",
-            bucket: @aliyun_bucket
-          }
-          @oss_client = ::Aliyun::Oss::Client.new(@aliyun_access_id, @aliyun_access_key, opts)
+        def public_client
+          if defined?(@_public_client)
+            @_public_client
+          else
+            @_public_client = oss_client(false)
+          end
         end
 
-        def oss_upload_client
-          return @oss_upload_client if defined?(@oss_upload_client)
-
-          # TODO: 实现根据 config.aliyun_internal 来使用内部 host 上传
-          host = "oss-#{@aliyun_area}.aliyuncs.com"
-
-          opts = {
-            host: host,
-            bucket: @aliyun_bucket
-          }
-
-          @oss_upload_client = ::Aliyun::Oss::Client.new(@aliyun_access_id, @aliyun_access_key, opts)
+        def private_client
+          if !@uploader.aliyun_internal
+            public_client
+          elsif defined?(@_private_client)
+            @_private_client
+          else
+            @_private_client = oss_client(true)
+          end
         end
+
+        def oss_client(is_internal = false)
+          client = ::Aliyun::OSS::Client.new(
+            endpoint: (is_internal ? "oss-#{@aliyun_area}-internal.aliyuncs.com" : "oss-#{@aliyun_area}.aliyuncs.com"),
+            access_key_id: @aliyun_access_id,
+            access_key_secret: @aliyun_access_key
+            )
+          client.get_bucket(@aliyun_bucket)
+        end
+
+        # def oss_client
+        #   return @oss_client if defined?(@oss_client)
+        #   opts = {
+        #     host: "oss-#{@aliyun_area}.aliyuncs.com",
+        #     bucket: @aliyun_bucket
+        #   }
+        #   @oss_client = ::Aliyun::Oss::Client.new(@aliyun_access_id, @aliyun_access_key, opts)
+        # end
+
+        # def oss_upload_client
+        #   return @oss_upload_client if defined?(@oss_upload_client)
+
+        #   if @uploader.aliyun_internal
+        #     host = "oss-#{@aliyun_area}-internal.aliyuncs.com"
+        #   else
+        #     host = "oss-#{@aliyun_area}.aliyuncs.com"
+        #   end
+
+        #   opts = {
+        #     host: host,
+        #     bucket: @aliyun_bucket
+        #   }
+
+        #   @oss_upload_client = ::Aliyun::Oss::Client.new(@aliyun_access_id, @aliyun_access_key, opts)
+        # end
       end
 
       class File < CarrierWave::SanitizedFile
@@ -195,9 +212,10 @@ module CarrierWave
         end
       end
 
+      # file: CarrierWave::SanitizedFile
       def store!(file)
         f = CarrierWave::Storage::Aliyun::File.new(uploader, self, uploader.store_path)
-        f.store(::File.open(file.file), content_type: file.content_type)
+        f.store(file, content_type: file.content_type)
         f
       end
 

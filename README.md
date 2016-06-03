@@ -6,6 +6,8 @@ This gem adds support for [Aliyun OSS](http://oss.aliyun.com) to [CarrierWave](h
 
 > NOTE: 此 Gem 是一个 CarrierWave 的组件，你需要配合 CarrierWave 一起使用，如果你需要直接用 Aliyun OSS，可以尝试用 [aliyun-oss-ruby-sdk](https://github.com/aliyun-beta/aliyun-oss-ruby-sdk) 这个 Gem。
 
+> NOTE: 20160604 修改依赖aliyun-oss-ruby-sdk为aliyun-sdk(>=0.4.0)，以支持config.aliyun_internal配置
+
 ## Using Bundler
 
 ```ruby
