@@ -11,7 +11,7 @@ This gem adds support for [Aliyun OSS](http://oss.aliyun.com) to [CarrierWave](h
 ## Using Bundler
 
 ```ruby
-gem 'carrierwave-aliyun-oss'
+gem 'carrierwave-aliyun-oss', require: 'carrierwave-aliyun'
 ```
 
 ## Configuration

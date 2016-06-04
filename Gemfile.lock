@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    carrierwave-aliyun (0.4.4)
+    carrierwave-aliyun-oss (0.4.4)
       aliyun-sdk (>= 0.4.0)
       carrierwave (>= 0.5.7)
 
@@ -144,7 +144,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  carrierwave-aliyun!
+  carrierwave-aliyun-oss!
   mini_magick
   rails (= 4.2.0)
   rake

@@ -23,6 +23,14 @@ describe "Aliyun" do
     expect(res.code).to eq "200"
   end
 
+  it "should get" do
+    content = ""
+    obj = @connection.get("a/a.jpg"){|chunk| content = chunk}
+    expect(content.length).to be >0
+    expect(obj.size).to be >0
+    expect(obj.headers).not_to be_empty
+  end
+
   it "should put with / prefix" do
     url = @connection.put("/a/a.jpg",load_file("foo.jpg"))
     res = Net::HTTP.get_response(URI.parse(url))

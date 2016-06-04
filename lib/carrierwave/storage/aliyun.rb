@@ -45,11 +45,10 @@ module CarrierWave
         # 读取文件
         # params:
         # - path - remote 存储路径
-        # returns:
-        # file data
-        def get(path)
+        # returns: Aliyun::OSS::Object
+        def get(path, &block)
           path.sub!(PATH_PREFIX, '')
-          private_client.get_object(path){ |content| content }
+          private_client.get_object(path){ |content| yield content if block_given?}
         end
 
         # 删除 Remote 的文件
@@ -158,9 +157,10 @@ module CarrierWave
         # [String] contents of the file
         #
         def read
-          object = oss_connection.get(@path)
+          body = ""
+          object = oss_connection.get(@path){|chunk| body = chunk}
           @headers = object.headers
-          object.body
+          body
         end
 
         ##
