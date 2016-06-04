@@ -158,7 +158,7 @@ module CarrierWave
         #
         def read
           body = ""
-          object = oss_connection.get(@path){|chunk| body = chunk}
+          object = oss_connection.get(@path){|chunk| body << chunk}
           @headers = object.headers
           body
         end

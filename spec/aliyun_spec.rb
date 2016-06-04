@@ -25,10 +25,9 @@ describe "Aliyun" do
 
   it "should get" do
     content = ""
-    obj = @connection.get("a/a.jpg"){|chunk| content = chunk}
-    expect(content.length).to be >0
-    expect(obj.size).to be >0
-    expect(obj.headers).not_to be_empty
+    obj = @connection.get("a/a.jpg"){|chunk| content << chunk}
+    expect(content.length).to eq(obj.size)
+    expect(open(@connection.path_to_url("a/a.jpg")){|f| f.read}).to eq(content)
   end
 
   it "should put with / prefix" do
